@@ -57,11 +57,51 @@ def _preprocess_data(data):
     # receive marks for submitting this code in an unchanged state.
     # ---------------------------------------------------------------
 
-    # ----------- Replace this code with your own preprocessing steps --------
-    predict_vector = feature_vector_df[['Madrid_wind_speed','Bilbao_rain_1h','Valencia_wind_speed']]
-    # ------------------------------------------------------------------------
+    df_test = pd.read_csv('df_test.csv', index_col = 0)
+    df = pd.read_csv('df_train.csv', index_col=0)
+    
+    # remove missing values/ features
+    df_new = df
+    df_new['Valencia_pressure'].fillna(df_new['Valencia_pressure'].median(), inplace = True)
+    df_test['Valencia_pressure'].fillna(df_test['Valencia_pressure'].median(), inplace = True)
 
-    return predict_vector
+    #converting categorical variables to numerical
+    df_new['time'] = pd.to_datetime(df_new['time'])
+    df_test['time'] = pd.to_datetime(df_test['time'])
+
+    df_new["Valencia_wind_deg"] = df_new['Valencia_wind_deg'].str.extract('(\d+)')
+    df_new['Valencia_wind_deg'] = pd.to_numeric(df_new['Valencia_wind_deg'])
+
+    df_test["Valencia_wind_deg"] = df_test['Valencia_wind_deg'].str.extract('(\d+)')
+    df_test['Valencia_wind_deg'] = pd.to_numeric(df_test['Valencia_wind_deg'])
+
+    df_new["Seville_pressure"] = df_new['Seville_pressure'].str.extract('(\d+)')
+    df_new['Seville_pressure'] = pd.to_numeric(df_new['Seville_pressure'])
+    
+    df_test["Seville_pressure"] = df_test['Seville_pressure'].str.extract('(\d+)')
+    df_test['Seville_pressure'] = pd.to_numeric(df_test['Seville_pressure'])
+    
+    df_new['Year']  = df_new['time'].astype('datetime64').dt.year
+    df_new['Month_of_year']  = df_new['time'].astype('datetime64').dt.month
+    df_new['Week_of_year'] = df_new['time'].astype('datetime64').dt.weekofyear
+    df_new['Day_of_year']  = df_new['time'].astype('datetime64').dt.dayofyear
+    df_new['Day_of_month']  = df_new['time'].astype('datetime64').dt.day
+    df_new['Day_of_week'] = df_new['time'].astype('datetime64').dt.dayofweek
+    df_new['Hour_of_week'] = ((df_new['time'].astype('datetime64').dt.dayofweek) * 24 + 24) - (24 - df_new['time'].astype('datetime64').dt.hour)
+    df_new['Hour_of_day']  = df_new['time'].astype('datetime64').dt.hour
+
+    df_test['Year']  = df_test['time'].astype('datetime64').dt.year
+    df_test['Month_of_year']  = df_test['time'].astype('datetime64').dt.month
+    df_test['Week_of_year'] = df_test['time'].astype('datetime64').dt.weekofyear
+    df_test['Day_of_year']  = df_test['time'].astype('datetime64').dt.dayofyear
+    df_test['Day_of_month']  = df_test['time'].astype('datetime64').dt.day
+    df_test['Day_of_week'] = df_test['time'].astype('datetime64').dt.dayofweek
+    df_test['Hour_of_week'] = ((df_test['time'].astype('datetime64').dt.dayofweek) * 24 + 24) - (24 - df_test['time'].astype('datetime64').dt.hour)
+    df_test['Hour_of_day']  = df_test['time'].astype('datetime64').dt.hour
+
+    df_train = df_new.drop('time',axis = 1)
+    df_test1 = df_test.drop('time', axis = 1)
+    return df_train, df_test1
 
 def load_model(path_to_model:str):
     """Adapter function to load our pretrained model into memory.
